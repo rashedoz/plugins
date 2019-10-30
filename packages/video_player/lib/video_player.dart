@@ -9,9 +9,16 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 
+
+/////// Bit Rates/////////
+enum BitRate {
+  p144,p240,p360,p480,p720,p1080
+}
+
+
 final MethodChannel _channel = const MethodChannel('flutter.io/videoPlayer')
-  // This will clear all open videos on the platform when a full restart is
-  // performed.
+// This will clear all open videos on the platform when a full restart is
+// performed.
   ..invokeMethod<void>('init');
 
 class DurationRange {
@@ -217,7 +224,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         break;
     }
     final Map<String, dynamic> response =
-        await _channel.invokeMapMethod<String, dynamic>(
+    await _channel.invokeMapMethod<String, dynamic>(
       'create',
       dataSourceDescription,
     );
@@ -305,6 +312,13 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     super.dispose();
   }
 
+  //////////// change Bit rate /////////
+  Future<void> changeBitRate({@required BitRate bitRate}) async {
+    //print("index- ${bitRate.index}");
+//    value = value.copyWith(isPlaying: false);
+    await _applyChangeBitRate(bitRate);
+  }
+
   Future<void> play() async {
     value = value.copyWith(isPlaying: true);
     await _applyPlayPause();
@@ -341,7 +355,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       );
       _timer = Timer.periodic(
         const Duration(milliseconds: 500),
-        (Timer timer) async {
+            (Timer timer) async {
           if (_isDisposed) {
             return;
           }
@@ -359,6 +373,17 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         <String, dynamic>{'textureId': _textureId},
       );
     }
+  }
+
+  /////////// Change bit rate invoke method ////////////
+  Future<void> _applyChangeBitRate(BitRate bitRate) async {
+    if (!value.initialized || _isDisposed) {
+      return;
+    }
+    await _channel.invokeMethod<void>(
+      'changeBitRate',
+      <String, dynamic>{'textureId': _textureId, 'bitRate': bitRate.index},
+    );
   }
 
   Future<void> _applyVolume() async {
@@ -410,7 +435,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   }
 
   static const Map<VideoFormat, String> _videoFormatStringMap =
-      <VideoFormat, String>{
+  <VideoFormat, String>{
     VideoFormat.ss: 'ss',
     VideoFormat.hls: 'hls',
     VideoFormat.dash: 'dash',
@@ -585,11 +610,11 @@ class _VideoScrubberState extends State<_VideoScrubber> {
 /// that will also detect the gestures.
 class VideoProgressIndicator extends StatefulWidget {
   VideoProgressIndicator(
-    this.controller, {
-    VideoProgressColors colors,
-    this.allowScrubbing,
-    this.padding = const EdgeInsets.only(top: 5.0),
-  }) : colors = colors ?? VideoProgressColors();
+      this.controller, {
+        VideoProgressColors colors,
+        this.allowScrubbing,
+        this.padding = const EdgeInsets.only(top: 5.0),
+      }) : colors = colors ?? VideoProgressColors();
 
   final VideoPlayerController controller;
   final VideoProgressColors colors;
