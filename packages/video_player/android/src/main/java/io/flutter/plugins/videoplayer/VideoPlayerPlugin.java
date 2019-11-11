@@ -95,7 +95,7 @@ public class VideoPlayerPlugin implements MethodCallHandler {
       ////////// start the video at 360p /////////////
       DefaultTrackSelector.Parameters defaultTrackParam = trackSelector.buildUponParameters()
               .setMaxVideoBitrate(MI_BITRATE_360)
-              .setForceHighestSupportedBitrate(true)
+              .setForceHighestSupportedBitrate(false)
               .build();
       trackSelector.setParameters(defaultTrackParam);
       ////////////////////////////////////////////////////////
